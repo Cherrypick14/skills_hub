@@ -45,7 +45,7 @@ thread_local! {
 #[update]
 fn add_user(id: String, skills: Vec<String>, wants_to_learn: Vec<String>) {
     let user = User { id: id.clone(), skills, wants_to_learn };
-    STATE.with_mut(|state| state.users.insert(id, user)); 
+    STATE.with(|state| state.users.insert(id, user)); 
 }
 
 // Function to find matching users based on shared learning interests
@@ -71,7 +71,7 @@ fn find_matches(user_id: String) -> Vec<User> {
 #[update]
 fn submit_review(reviewee: String, reviewer: String, rating: u8, comment: String) {
     let review = Review { reviewer, rating, comment };
-    STATE.with_mut(|state| {
+    STATE.with(|state| {
         // Add the review to the list of reviews for the specified user
         state.reviews.entry(reviewee.clone()).or_insert(Vec::new()).push(review);
     });
@@ -87,7 +87,7 @@ fn get_reviews(user_id: String) -> Vec<Review> {
 #[update]
 fn add_resource(link: String, category: String, description: String, added_by: String) {
     let resource = Resource { link, category: category.clone(), description, added_by };
-    STATE.with_mut(|state| {
+    STATE.with(|state| {
         // Add the resource to the specified category
         state.resources.entry(category).or_insert(Vec::new()).push(resource);
     });
