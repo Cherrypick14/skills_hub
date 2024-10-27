@@ -3,99 +3,74 @@ use std::collections::HashMap;
 use ic_cdk::export::candid::{CandidType, Deserialize};
 use ic_cdk_macros::{update, query};
 
-// Define a structure to represent a user in the skill exchange system
+// Define a structure to represent a user
 #[derive(CandidType, Deserialize, Clone)]
 struct User {
-    id: String,                     
-    skills: Vec<String>,            
-    wants_to_learn: Vec<String>,    
+    id: String,
+    skills: Vec<String>,
+    wants_to_learn: Vec<String>,
 }
 
-// Define a structure to represent a review left by one user for another
-#[derive(CandidType, Deserialize, Clone)]
-struct Review {
-    reviewer: String,               
-    rating: u8,                    
-    comment: String,               
-}
-
-// Define a structure to represent a learning resource shared in the platform
+// Define a structure to represent a learning resource
 #[derive(CandidType, Deserialize, Clone)]
 struct Resource {
-    link: String,                   
-    category: String,               
-    description: String,            
-    added_by: String,              
+    link: String,
+    category: String,
+    added_by: String,
 }
 
-// Main state struct that holds users, reviews, and resources in the platform
+// Main state struct that holds users and resources
 #[derive(Default)]
 struct SkillExchange {
-    users: HashMap<String, User>,        
-    reviews: HashMap<String, Vec<Review>>, 
-    resources: HashMap<String, Vec<Resource>>, 
+    users: HashMap<String, User>,
+    resources: HashMap<String, Vec<Resource>>,
 }
 
 // Declare the state variable using thread-local storage
 thread_local! {
-    static STATE: std::cell::RefCell<SkillExchange> = std::cell::RefCell::new(SkillExchange::default());
+    static STATE: SkillExchange = SkillExchange::default();
 }
 
-// Function to add a new user to the platform
+// Function to add a new user
 #[update]
 fn add_user(id: String, skills: Vec<String>, wants_to_learn: Vec<String>) {
     let user = User { id: id.clone(), skills, wants_to_learn };
-    STATE.with(|state| state.borrow_mut().users.insert(id, user)); 
+    STATE.with(|state| state.users.borrow_mut().insert(id, user));
 }
 
-// Function to find matching users based on shared learning interests
+// Function to find matching users based on learning interests
 #[query]
 fn find_matches(user_id: String) -> Vec<User> {
-    let mut matches = Vec::new();
     STATE.with(|state| {
-        let state = state.borrow();
-        // Ensure the user exists before proceeding
+        let mut matches = Vec::new();
         if let Some(user) = state.users.get(&user_id) {
-            // Iterate through all users and find those who have skills the user wants to learn
             for other_user in state.users.values() {
-                if other_user.id != user_id && 
-                   user.wants_to_learn.iter().any(|skill| other_user.skills.contains(skill)) {
-                    matches.push(other_user.clone()); 
+                if other_user.id != user_id
+                    && user.wants_to_learn.iter().any(|skill| other_user.skills.contains(skill))
+                {
+                    matches.push(other_user.clone());
                 }
             }
         }
-    });
-    matches
+        matches
+    })
 }
 
-// Function to submit a review for another user
+// Function to add a new learning resource
 #[update]
-fn submit_review(reviewee: String, reviewer: String, rating: u8, comment: String) {
-    let review = Review { reviewer, rating, comment };
+fn add_resource(link: String, category: String, added_by: String) {
+    let resource = Resource { link, category: category.clone(), added_by };
     STATE.with(|state| {
-        // Add the review to the list of reviews for the specified user
-        state.borrow_mut().reviews.entry(reviewee.clone()).or_insert(Vec::new()).push(review);
+        state.resources
+            .borrow_mut()
+            .entry(category)
+            .or_insert(Vec::new())
+            .push(resource);
     });
 }
 
-// Function to retrieve all reviews for a specific user
-#[query]
-fn get_reviews(user_id: String) -> Vec<Review> {
-    STATE.with(|state| state.borrow().reviews.get(&user_id).cloned().unwrap_or_default())
-}
-
-// Function to add a new learning resource to the platform
-#[update]
-fn add_resource(link: String, category: String, description: String, added_by: String) {
-    let resource = Resource { link, category: category.clone(), description, added_by };
-    STATE.with(|state| {
-        // Add the resource to the specified category
-        state.borrow_mut().resources.entry(category).or_insert(Vec::new()).push(resource);
-    });
-}
-
-// Function to retrieve all resources for a specific category
+// Function to retrieve all resources by category
 #[query]
 fn get_resources(category: String) -> Vec<Resource> {
-    STATE.with(|state| state.borrow().resources.get(&category).cloned().unwrap_or_default())
+    STATE.with(|state| state.resources.get(&category).cloned().unwrap_or_default())
 }
