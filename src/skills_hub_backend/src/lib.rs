@@ -38,14 +38,14 @@ struct SkillExchange {
 
 // Declare the state variable using thread-local storage
 thread_local! {
-    static STATE: SkillExchange = SkillExchange::default();
+    static STATE: std::cell::RefCell<SkillExchange> = std::cell::RefCell::new(SkillExchange::default());
 }
 
 // Function to add a new user to the platform
 #[update]
 fn add_user(id: String, skills: Vec<String>, wants_to_learn: Vec<String>) {
     let user = User { id: id.clone(), skills, wants_to_learn };
-    STATE.with(|state| state.users.insert(id, user)); 
+    STATE.with(|state| state.borrow_mut().users.insert(id, user)); 
 }
 
 // Function to find matching users based on shared learning interests
@@ -53,6 +53,7 @@ fn add_user(id: String, skills: Vec<String>, wants_to_learn: Vec<String>) {
 fn find_matches(user_id: String) -> Vec<User> {
     let mut matches = Vec::new();
     STATE.with(|state| {
+        let state = state.borrow();
         // Ensure the user exists before proceeding
         if let Some(user) = state.users.get(&user_id) {
             // Iterate through all users and find those who have skills the user wants to learn
@@ -73,14 +74,14 @@ fn submit_review(reviewee: String, reviewer: String, rating: u8, comment: String
     let review = Review { reviewer, rating, comment };
     STATE.with(|state| {
         // Add the review to the list of reviews for the specified user
-        state.reviews.entry(reviewee.clone()).or_insert(Vec::new()).push(review);
+        state.borrow_mut().reviews.entry(reviewee.clone()).or_insert(Vec::new()).push(review);
     });
 }
 
 // Function to retrieve all reviews for a specific user
 #[query]
 fn get_reviews(user_id: String) -> Vec<Review> {
-    STATE.with(|state| state.reviews.get(&user_id).cloned().unwrap_or_default())
+    STATE.with(|state| state.borrow().reviews.get(&user_id).cloned().unwrap_or_default())
 }
 
 // Function to add a new learning resource to the platform
@@ -89,12 +90,12 @@ fn add_resource(link: String, category: String, description: String, added_by: S
     let resource = Resource { link, category: category.clone(), description, added_by };
     STATE.with(|state| {
         // Add the resource to the specified category
-        state.resources.entry(category).or_insert(Vec::new()).push(resource);
+        state.borrow_mut().resources.entry(category).or_insert(Vec::new()).push(resource);
     });
 }
 
 // Function to retrieve all resources for a specific category
 #[query]
 fn get_resources(category: String) -> Vec<Resource> {
-    STATE.with(|state| state.resources.get(&category).cloned().unwrap_or_default())
+    STATE.with(|state| state.borrow().resources.get(&category).cloned().unwrap_or_default())
 }
