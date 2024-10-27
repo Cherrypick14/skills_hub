@@ -3,17 +3,12 @@
     "skills_hub_backend": {
       "candid": "src/skills_hub_backend/skills_hub_backend.did",
       "package": "skills_hub_backend",
-      "type": "rust"
-    },
-    "skills_hub_frontend": {
-      "dependencies": [
-        "skills_hub_backend"
-      ],
-      "source": [
-        "src/skills_hub_frontend/dist"
-      ],
-      "type": "assets",
-      "workspace": "skills_hub_frontend"
+      "type": "rust",
+      "metadata": [
+        {
+          "name": "candid:service"
+        }
+      ]
     }
   },
   "defaults": {
