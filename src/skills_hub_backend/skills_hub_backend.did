@@ -1,0 +1,23 @@
+type User = record {
+  id: text;
+  skills: vec text;
+  wants_to_learn: vec text;
+};
+
+type Resource = record {
+  link: text;
+  category: text;
+  added_by: text;
+};
+
+type Result = variant { Ok: text; Err: text };
+type UserResult = variant { Ok: vec User; Err: text };
+type ResourceResult = variant { Ok: vec Resource; Err: text };
+
+service : {
+  add_user: (text, vec text, vec text) -> (Result) query;
+  find_matches: (text) -> (UserResult) query;
+  add_resource: (text, text, text) -> (Result);
+  get_resources: (text) -> (ResourceResult) query;
+  update_user: (text, vec text, vec text) -> (Result);
+}
