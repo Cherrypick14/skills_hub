@@ -87,32 +87,32 @@ If you are hosting frontend code somewhere without using DFX, you may need to ma
 
 ## Interacting with the Canister via CLI
 
-You can interact with the SkillExchange canister directly from the command line interface (CLI) using the following methods:
+You can interact with the Skillhub canister directly from the command line interface (CLI) using the following methods:
 
 **_-To add a new user to the system:_**
 
   ```bash
-  dfx canister call skill_exchange add_user '("user1", vec {"Rust", "JavaScript"}, vec {"Python", "Go"})'
+  dfx canister call skill_hub_backend add_user '("user1", vec {"Rust", "JavaScript"}, vec {"Python", "Go"})'
   ```
 **_-To find matches for a user based on their learning interests:_**
 
   ```bash
-  dfx canister call skill_exchange find_matches '("user1")'
+  dfx canister call skill_hub_backend find_matches '("user1")'
   ```
 **_-To add a new learning resource:_**
 
   ```bash
-  dfx canister call skill_exchange add_resource '("https://doc.rust-lang.org/book/", "Rust", "user1")'
+  dfx canister call skill_hub_backend add_resource '("https://doc.rust-lang.org/book/", "Rust", "user1")'
   ```
 **_-To retrieve resources for a specific category:_**
 
   ```bash
-  dfx canister call skill_exchange get_resources '("Rust")'
+  dfx canister call skill_hub_backend get_resources '("Rust")'
   ```
 **_-To update an existing user's profile:_**
 
   ```bash
-  dfx canister call skill_exchange update_user '("user1", vec {"Rust", "JavaScript", "Python"}, vec {"Go", "TypeScript"})'
+  dfx canister call skill_hub_backend update_user '("user1", vec {"Rust", "JavaScript", "Python"}, vec {"Go", "TypeScript"})'
   ```
 
 
