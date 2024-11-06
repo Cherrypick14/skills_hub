@@ -5,6 +5,7 @@ type User = record {
 };
 
 type Resource = record {
+  id: text;
   link: text;
   category: text;
   added_by: text;
@@ -13,11 +14,15 @@ type Resource = record {
 type Result = variant { Ok: text; Err: text };
 type UserResult = variant { Ok: vec User; Err: text };
 type ResourceResult = variant { Ok: vec Resource; Err: text };
+type BoolResult = variant { Ok: bool; Err: text };
 
 service : {
-  add_user: (text, vec text, vec text) -> (Result) query;
+  add_user: (vec text, vec text) -> (Result);
   find_matches: (text) -> (UserResult) query;
   add_resource: (text, text, text) -> (Result);
   get_resources: (text) -> (ResourceResult) query;
   update_user: (text, vec text, vec text) -> (Result);
+  get_all_users: () -> (UserResult) query;
+  delete_resource: (text, text) -> (Result);
+  user_exists: (text) -> (BoolResult) query;
 }
